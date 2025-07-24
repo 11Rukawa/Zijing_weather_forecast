@@ -1,4 +1,5 @@
 import json
+from transformers import AutoTokenizer, GPT2LMHeadModel
 
 
 def get_weather(city: str) -> str:
@@ -29,3 +30,13 @@ def get_weather(city: str) -> str:
     if city_key in weather_data:
         return json.dumps(weather_data[city_key], ensure_ascii=False)
     return json.dumps({"error": "Weather Unavailable"}, ensure_ascii=False)
+
+tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
+model = GPT2LMHeadModel.from_pretrained("openai-community/gpt2")
+
+inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
+outputs = model(**inputs, labels=inputs["input_ids"])
+loss = outputs.loss
+print(loss)
+logits = outputs.logits
+print(logits)
