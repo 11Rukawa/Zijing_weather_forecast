@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
-user_input="查找深圳的天气，然后用一句话告诉我出门要不要带伞"
+user_input="How's the weather in Shanghai?"
 
 def get_weather(city: str) -> str:
     weather_data = {
@@ -53,7 +53,7 @@ tools = [
                 "properties": {
                     "location": {
                         "type": "string",
-                        "description": "The city and state, e.g. San Francisco, CA",
+                        "description": "The city, e.g. San Francisco",
                     }
                 },
                 "required": ["location"]
@@ -68,15 +68,35 @@ def send_messages(messages):
         messages=messages,
         tools=tools
     )
+    print(response)
     return response.choices[0].message
 
-messages = [{"role": "user", "content": user_input}]
-message = send_messages(messages)
-print(message)
+input_messages = [{"role": "user", "content": user_input}]
+checkingMessage = send_messages(input_messages)
+print(checkingMessage.content) # remain
+print(input_messages)
+input_messages.append(checkingMessage)
+print(input_messages)
 
-tool = message.tool_calls[0]
-messages.append(message)
 
-messages.append({"role": "tool", "tool_call_id": tool.id, "content": "24℃"})
-message = send_messages(messages)
-print(message)
+if hasattr(checkingMessage, "tool_calls") and checkingMessage.tool_calls:
+    tool_call = checkingMessage.tool_calls[0]
+    print(tool_call)
+    city = json.loads(tool_call.function.arguments)["location"]
+    print(city)
+
+    weather_result = get_weather(city)
+    print("----------------")
+    print(weather_result)
+    input_messages.append({
+        "role": "tool",
+        "tool_call_id": tool_call.id,
+        "content": weather_result
+    })
+
+    resultMessage = send_messages(input_messages)
+    print("true")
+    print(resultMessage.content)
+else:
+    print("error")
+    print(checkingMessage.content)
