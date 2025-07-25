@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
-user_input="How's the weather in Shanghai?"
+user_input="Vérifiez la météo à Shenzhen, puis dites-moi en une phrase si je dois prendre un parapluie pour sortir."
 
 def get_weather(city: str) -> str:
     weather_data = {
@@ -53,7 +53,7 @@ tools = [
                 "properties": {
                     "location": {
                         "type": "string",
-                        "description": "The city, e.g. San Francisco",
+                        "description": "The city in English, e.g. San Francisco",
                     }
                 },
                 "required": ["location"]
@@ -98,5 +98,4 @@ if hasattr(checkingMessage, "tool_calls") and checkingMessage.tool_calls:
     print("true")
     print(resultMessage.content)
 else:
-    print("error")
-    print(checkingMessage.content)
+    print("Something went wrong, try again later")
