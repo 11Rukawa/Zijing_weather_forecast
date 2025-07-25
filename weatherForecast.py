@@ -7,6 +7,12 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
 def get_weather(city: str) -> str:
+    city_map = {
+        "北京": "beijing",
+        "beijing": "beijing",
+        "深圳": "shenzhen",
+        "shenzhen": "shenzhen"
+    }
     weather_data = {
         "beijing": {
             "location": "Beijing",
@@ -30,7 +36,7 @@ def get_weather(city: str) -> str:
         }
     }
 
-    city_key = city.lower()
+    city_key = city_map.get(city.lower(), city.lower())
     if city_key in weather_data:
         return json.dumps(weather_data[city_key], ensure_ascii=False)
     return json.dumps({"error": "Weather Unavailable"}, ensure_ascii=False)
@@ -51,7 +57,7 @@ tools = [
                 "properties": {
                     "location": {
                         "type": "string",
-                        "description": "The city in English, e.g. San Francisco",
+                        "description": "The city needs to be translated into English (e.g. Beijing)",
                     }
                 },
                 "required": ["location"]
@@ -71,7 +77,6 @@ def send_messages(messages):
 user_input=input("How can I help you?")
 input_messages = [{"role": "user", "content": user_input}]
 checkingMessage = send_messages(input_messages)
-print(checkingMessage.content)
 input_messages.append(checkingMessage)
 
 
