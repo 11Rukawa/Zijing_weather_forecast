@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
-user_input="查找深圳的天气，然后用一句话告诉我出门要不要带伞。"
-
 def get_weather(city: str) -> str:
     weather_data = {
         "beijing": {
@@ -70,6 +68,7 @@ def send_messages(messages):
     )
     return response.choices[0].message
 
+user_input=input("How can I help you?")
 input_messages = [{"role": "user", "content": user_input}]
 checkingMessage = send_messages(input_messages)
 print(checkingMessage.content)
