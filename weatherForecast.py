@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
-user_input="Vérifiez la météo à Shenzhen, puis dites-moi en une phrase si je dois prendre un parapluie pour sortir."
+user_input="查找深圳的天气，然后用一句话告诉我出门要不要带伞。"
 
 def get_weather(city: str) -> str:
     weather_data = {
@@ -68,26 +68,19 @@ def send_messages(messages):
         messages=messages,
         tools=tools
     )
-    print(response)
     return response.choices[0].message
 
 input_messages = [{"role": "user", "content": user_input}]
 checkingMessage = send_messages(input_messages)
-print(checkingMessage.content) # remain
-print(input_messages)
+print(checkingMessage.content)
 input_messages.append(checkingMessage)
-print(input_messages)
 
 
 if hasattr(checkingMessage, "tool_calls") and checkingMessage.tool_calls:
     tool_call = checkingMessage.tool_calls[0]
-    print(tool_call)
     city = json.loads(tool_call.function.arguments)["location"]
-    print(city)
 
     weather_result = get_weather(city)
-    print("----------------")
-    print(weather_result)
     input_messages.append({
         "role": "tool",
         "tool_call_id": tool_call.id,
@@ -95,7 +88,6 @@ if hasattr(checkingMessage, "tool_calls") and checkingMessage.tool_calls:
     })
 
     resultMessage = send_messages(input_messages)
-    print("true")
     print(resultMessage.content)
 else:
     print("Something went wrong, try again later")
