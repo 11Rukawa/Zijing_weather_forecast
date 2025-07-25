@@ -1,6 +1,12 @@
 import json
-from transformers import AutoTokenizer, GPT2LMHeadModel
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+
+user_input="查找深圳的天气，然后用一句话告诉我出门要不要带伞"
 
 def get_weather(city: str) -> str:
     weather_data = {
@@ -31,12 +37,46 @@ def get_weather(city: str) -> str:
         return json.dumps(weather_data[city_key], ensure_ascii=False)
     return json.dumps({"error": "Weather Unavailable"}, ensure_ascii=False)
 
-tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
-model = GPT2LMHeadModel.from_pretrained("openai-community/gpt2")
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://api.deepseek.com",
+)
 
-inputs = tokenizer("Hello, my dog is cute", return_tensors="pt")
-outputs = model(**inputs, labels=inputs["input_ids"])
-loss = outputs.loss
-print(loss)
-logits = outputs.logits
-print(logits)
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get weather of an location, the user should supply a location first",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The city and state, e.g. San Francisco, CA",
+                    }
+                },
+                "required": ["location"]
+            },
+        }
+    },
+]
+
+def send_messages(messages):
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=messages,
+        tools=tools
+    )
+    return response.choices[0].message
+
+messages = [{"role": "user", "content": user_input}]
+message = send_messages(messages)
+print(message)
+
+tool = message.tool_calls[0]
+messages.append(message)
+
+messages.append({"role": "tool", "tool_call_id": tool.id, "content": "24℃"})
+message = send_messages(messages)
+print(message)
